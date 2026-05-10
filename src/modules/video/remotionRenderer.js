@@ -60,6 +60,14 @@ async function renderVideo(props, outputDir, durationSeconds, jobId) {
       codec: 'h264',
       outputLocation: outputPath,
       inputProps: props,
+      concurrency: 1,
+      x264Preset: 'ultrafast',
+      ffmpegOverride: ({ args }) => {
+        // Limit FFmpeg threads to prevent OOM in constrained containers
+        const idx = args.indexOf('-threads');
+        if (idx !== -1) args.splice(idx, 2);
+        return ['-threads', '2', ...args];
+      },
       chromiumOptions: {
         disableWebSecurity: true,
         headless: true,
