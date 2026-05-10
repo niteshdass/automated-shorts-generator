@@ -7,6 +7,8 @@ const {
   Sequence,
   AbsoluteFill,
   Audio,
+  Video,
+  staticFile,
 } = require('remotion');
 
 // ── Subtitle entry component ──────────────────────────────────────────────────
@@ -146,38 +148,51 @@ function Headline({ text, fps }) {
   );
 }
 
-// ── Animated gradient background ──────────────────────────────────────────────
-function Background({ backgroundImageUrl }) {
+// ── Background: B-roll video > article image > animated gradient ──────────────
+function Background({ backgroundVideoSrc, backgroundImageUrl }) {
   const frame = useCurrentFrame();
   const hue = interpolate(frame, [0, 300], [220, 260], { extrapolateRight: 'clamp' });
   const scale = interpolate(frame, [0, 300], [1, 1.05], { extrapolateRight: 'clamp' });
 
+  const CLIP_STYLE = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    filter: 'brightness(0.4) saturate(1.2)',
+  };
+
+  let bg;
+  if (backgroundVideoSrc) {
+    bg = React.createElement(Video, {
+      src: staticFile(backgroundVideoSrc),
+      style: CLIP_STYLE,
+      muted: true,
+      loop: true,
+    });
+  } else if (backgroundImageUrl) {
+    bg = React.createElement('img', {
+      src: backgroundImageUrl,
+      style: { ...CLIP_STYLE, transform: `scale(${scale})` },
+    });
+  } else {
+    bg = React.createElement('div', {
+      style: {
+        width: '100%',
+        height: '100%',
+        background: `linear-gradient(
+          160deg,
+          hsl(${hue}, 60%, 10%) 0%,
+          hsl(${hue + 20}, 50%, 5%) 50%,
+          hsl(140, 50%, 8%) 100%
+        )`,
+      },
+    });
+  }
+
   return React.createElement(
     AbsoluteFill,
     {},
-    backgroundImageUrl
-      ? React.createElement('img', {
-          src: backgroundImageUrl,
-          style: {
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: `scale(${scale})`,
-            filter: 'brightness(0.4) saturate(1.2)',
-          },
-        })
-      : React.createElement('div', {
-          style: {
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(
-              160deg,
-              hsl(${hue}, 60%, 10%) 0%,
-              hsl(${hue + 20}, 50%, 5%) 50%,
-              hsl(140, 50%, 8%) 100%
-            )`,
-          },
-        }),
+    bg,
     // Dark overlay for readability
     React.createElement('div', {
       style: {
@@ -312,7 +327,7 @@ function SubscribeCTA({ durationInFrames, fps }) {
 }
 
 // ── Root composition ──────────────────────────────────────────────────────────
-function CricketShort({ headline, subtitles, channelName, backgroundImageUrl, audioSrc }) {
+function CricketShort({ headline, subtitles, channelName, backgroundImageUrl, backgroundVideoSrc, audioSrc }) {
   const { fps, durationInFrames } = useVideoConfig();
 
   return React.createElement(
@@ -324,7 +339,7 @@ function CricketShort({ headline, subtitles, channelName, backgroundImageUrl, au
         backgroundColor: '#0a0f1a',
       },
     },
-    React.createElement(Background, { backgroundImageUrl }),
+    React.createElement(Background, { backgroundVideoSrc, backgroundImageUrl }),
     React.createElement(Headline, { text: headline, fps }),
     React.createElement(Subtitles, { subtitles: subtitles || [], fps }),
     React.createElement(SubscribeCTA, { durationInFrames, fps }),

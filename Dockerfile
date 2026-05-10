@@ -56,6 +56,7 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source
 COPY src ./src
 COPY scripts ./scripts
+COPY public ./public
 
 # Create output directories with correct permissions
 RUN mkdir -p outputs/jobs outputs/logs && \

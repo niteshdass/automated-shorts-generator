@@ -22,6 +22,7 @@ function RemotionRoot() {
         subtitles: DEFAULT_SUBTITLES,
         channelName: 'CricketViralShorts',
         backgroundImageUrl: null,
+        backgroundVideoSrc: null,
         audioSrc: null,
       },
     })

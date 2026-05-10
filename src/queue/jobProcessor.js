@@ -9,6 +9,7 @@ const { renderVideo } = require('../modules/video/remotionRenderer');
 const { combineMedia } = require('../modules/video/ffmpegCombiner');
 const { uploadToYoutube } = require('../modules/upload/youtubeUploader');
 const { createJobDir, jobPath, cleanJobDir, writeJson } = require('../utils/fileManager');
+const { pickBackgroundVideo } = require('../utils/backgroundPicker');
 const config = require('../config');
 const logger = require('../utils/logger');
 
@@ -60,11 +61,17 @@ async function processShortJob(job) {
 
   // ── 6. Render base video with Remotion ────────────────────────────────────
   log('Step 5/7: Rendering video with Remotion');
+  const backgroundVideoSrc = pickBackgroundVideo(category);
+  if (backgroundVideoSrc) {
+    log(`Using background video: ${backgroundVideoSrc}`);
+  }
+
   const remotionProps = {
     headline: article.title,
     subtitles: subtitleChunks,
     channelName: config.shorts.channelName,
-    backgroundImageUrl: article.imageUrl || null,
+    backgroundVideoSrc: backgroundVideoSrc || null,
+    backgroundImageUrl: backgroundVideoSrc ? null : (article.imageUrl || null),
     audioSrc: null, // Audio added via FFmpeg (Remotion handles muted base)
   };
   const baseVideoPath = await renderVideo(remotionProps, outputDir, durationSeconds, jobId);
