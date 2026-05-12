@@ -24,14 +24,14 @@ async function generateAudio(text, outputDir, jobId) {
 // ── Edge TTS (Microsoft) ──────────────────────────────────────────────────────
 async function generateEdgeTTS(text, outputDir, jobId) {
   return withRetry(async () => {
-    const audioPath = path.join(outputDir, 'audio.mp3');
+    const audioPath = path.join(outputDir, 'audio.webm');
     logger.info(`Generating TTS via Edge: voice=${config.tts.voice}`, { jobId });
 
     const tts = new MsEdgeTTS();
 
     await tts.setMetadata(
       config.tts.voice,
-      OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3
+      OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
     );
 
     const ssml = buildSSML(text);
